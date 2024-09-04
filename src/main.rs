@@ -17,8 +17,8 @@ fn main() {
             let server = TestServer::new(port);
             server.start_listen();
         }
-        config::Commands::Client {test_time, addr, port , arrive_per_sec, alpha} => {
-            let mut client = TestClient::new(test_time.unwrap_or(Duration::from_str("250s").expect("Cannot parse 250s as duration").into()),addr, port, arrive_per_sec, alpha);
+        config::Commands::Client {test_time, addr, port , arrive_per_sec, alpha, threads_num} => {
+            let mut client = TestClient::new(test_time.unwrap_or(Duration::from_str("250s").expect("Cannot parse 250s as duration").into()),addr, port, arrive_per_sec, alpha, threads_num);
             client.start_sending();
         }
     }

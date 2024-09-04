@@ -29,5 +29,7 @@ pub enum Commands {
         arrive_per_sec: u16,
         #[arg(long, default_value_t = 0.9)]
         alpha: f64,
+        #[arg(long = "threads", default_value_t = 4)]
+        threads_num: usize,
     }
 }

@@ -30,7 +30,10 @@ impl TestServer {
         // We simply want to consume the content
         let mut buf = Vec::<u8>::new();
         match stream.read_to_end(&mut buf) {
-            Ok(_) => println!("Receive data length: {}", buf.len()),
+            Ok(_) => {
+                println!("Receive data length: {}, content: {}", buf.len(), &buf.get(0).unwrap_or(&0));
+                return;
+            },
             Err(e) => println!("Receive error: {}", e),
         }
     }
