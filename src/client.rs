@@ -28,16 +28,19 @@ impl TestClient {
         let start_time = Instant::now();
         let thread_pool = rayon::ThreadPoolBuilder::new().num_threads(self.thread_num).build().expect("Build threadpool failed");
         thread_pool.scope(|s| {
+            let mut send_count: u32 = 0;
             let mut next_send_time = start_time + Duration::from_micros((self.exp_dist.sample(&mut self.rng) * 1000000.0) as u64);
             while start_time.elapsed() < self.test_time {
                 println!("Elapsed: {}", start_time.elapsed().as_secs());
                 let now = Instant::now();
                 let send_size = self.get_send_size();
                 let content = self.rng.next_u32() as u8;
-                println!("Data length: {}, content: {}", send_size * 1024, content);
+                println!("Send data length: {}, flow_count: {}, content: {}", send_size * 1024, send_count, content);
                 
                 let addr = self.addr;
-                let buf: Vec<u8> = vec![content; send_size as usize * 1024];
+                let mut buf: Vec<u8> = vec![content; send_size as usize * 1024];
+                buf[0..4].copy_from_slice(&send_count.to_be_bytes());
+
                 sleep(next_send_time - now);
 
                 s.spawn(move |_| {
@@ -51,6 +54,7 @@ impl TestClient {
                 });
 
                 next_send_time += Duration::from_micros((self.exp_dist.sample(&mut self.rng) * 1000000.0) as u64);
+                send_count += 1;
             }
         });
     }
@@ -59,7 +63,7 @@ impl TestClient {
     fn get_send_size(&mut self) -> u32 {
         loop {
             let size = self.pareto_dist.sample(&mut self.rng) as u32;
-            if size <= 1024 && size >= 1 {
+            if (1..=1024).contains(&size) {
                 return size;
             }
         }
