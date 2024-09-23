@@ -35,7 +35,7 @@ impl TestClient {
                 let now = Instant::now();
                 let send_size = self.get_send_size();
                 let content = self.rng.next_u32() as u8;
-                println!("Send data length: {}, flow_count: {}, content: {}", send_size * 1024, send_count, content);
+                // println!("Send data length: {}, flow_count: {}, content: {}", send_size * 1024, send_count, content);
                 
                 let addr = self.addr;
                 let mut buf: Vec<u8> = vec![content; send_size as usize * 1024];
@@ -44,11 +44,12 @@ impl TestClient {
                 sleep(next_send_time - now);
 
                 s.spawn(move |_| {
+                    println!("Send data length: {}, flow_count: {}, content: {}", send_size * 1024, send_count, content);
                     let mut stream = TcpStream::connect(addr).expect("Couldn't connect to the server...");
-        
                     // stream.set_nonblocking(true).expect("set_nonblocking call failed");
                     stream.set_nodelay(true).expect("Set nodelay failed");
                     stream.write_all(&buf).expect("Stream write failed");
+                    println!("Shutting down flow_count {}", send_count);
                     stream.shutdown(Shutdown::Both).expect("Stream shutdown failed"); 
                     drop(stream);
                 });
